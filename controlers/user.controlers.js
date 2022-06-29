@@ -12,13 +12,15 @@ exports.signup = async (req, res) => {
     else {
       const salt = 10
       const hash = bcrypt.hashSync(req.body.password, salt);
-      const user = new User({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        password: hash
-      });
-      User.create(user);
+      // const user = new User({
+      //   firstName: req.body.firstName,
+      //   lastName: req.body.lastName,
+      //   email: req.body.email,
+      //   password: hash
+      // });
+    
+      req.body.password=hash
+      User.create(req.body);
       res.send({ message: 'User created!' });
     }
   }
