@@ -1,0 +1,57 @@
+const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+exports.signup = async (req, res) => {
+  try {
+   const userFound = await User.findOne({email: req.body.email})
+   console.log(userFound);
+    if (userFound) {
+      return  res.send({ message: 'the email address is already in use' });
+    }
+    else {
+      const salt = 10
+      const hash = bcrypt.hashSync(req.body.password, salt);
+      const user = new User({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: hash
+      });
+      User.create(user);
+      res.send({ message: 'User created!' });
+    }
+  }
+  catch (error) {
+    res.status(500).send({
+      message: error.message || 'some error occured while creating user'
+    });
+  }
+};
+
+exports.login = async (req, res, next) => {
+  try {
+    const userFound = await User.findOne({ email: req.body.email })
+    if (!userFound) {
+      return res.status(401).send({ message: 'Paire email/mot de passe incorrecte' });
+    }
+    const valid = bcrypt.compare(req.body.password, userFound.password)
+    if (!valid) {
+      return res.status(401).send({ message: 'Paire email/mot de passe incorrecte' });
+    }
+    res.status(200).send({message: {
+       userId: userFound._id,
+       token: jwt.sign(
+        { userId: userFound._id },
+        'RANDOM_TOKEN_SECRET',
+        { expiresIn: '1d' }
+    )}
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || 'some error occured'
+    });
+  }
+}
+
+
