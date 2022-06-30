@@ -21,11 +21,11 @@ exports.signup = async (req, res) => {
     
       req.body.password=hash
       User.create(req.body);
-      res.send({ message: 'User created!' });
+      res.json({ message: 'User created!' });
     }
   }
   catch (error) {
-    res.status(500).send({
+    res.status(500).json({
       message: error.message || 'some error occured while creating user'
     });
   }
@@ -45,7 +45,7 @@ exports.login = async (req, res, next) => {
        userId: userFound._id,
        token: jwt.sign(
         { userId: userFound._id },
-        'RANDOM_TOKEN_SECRET',
+        process.env.SECRET_KEY,
         { expiresIn: '1d' }
     )}
     });
